@@ -1,5 +1,5 @@
-const HG_WEATHER_KEY = '37c0bbb8';
-const HG_FINANCE_KEY = '37c0bbb8';
+const HG_WEATHER_KEY = 'bf20c501';
+const HG_FINANCE_KEY = 'bf20c501';
 const CITY_NAME = 'São Luiz Gonzaga,RS';
  
 // Troque pela URL da página de Análises assim que ela estiver publicada.
