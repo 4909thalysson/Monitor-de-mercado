@@ -1,0 +1,300 @@
+:root{
+  --blue: #2C55F0;
+  --ink: #1F2A44;
+  --gray: #6B7280;
+  --gray-light: #E5E9F0;
+  --page-bg: #F4F6FB;
+  --card-radius: 14px;
+
+  --soja-color: #16A34A;
+  --soja-bg: #ECFDF3;
+
+  --trigo-color: #2563EB;
+  --trigo-bg: #EEF4FF;
+
+  --milho-color: #F08C1A;
+  --milho-bg: #FFF6EA;
+}
+
+*{ box-sizing: border-box; }
+
+body{
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--ink);
+  font-family: 'Barlow', Arial, sans-serif;
+}
+
+.page{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 28px 56px;
+}
+
+/* ============ CABEÇALHO ============ */
+
+.page-header{
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.header-icon{
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--blue);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-title{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  margin: 4px 0 4px;
+}
+
+.page-subtitle{
+  font-size: 14px;
+  color: var(--gray);
+  margin: 0;
+  max-width: 640px;
+}
+
+/* ============ COLUNAS ============ */
+
+.columns{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.column{
+  background: #FFFFFF;
+  border-radius: var(--card-radius);
+  border: 1px solid var(--gray-light);
+  overflow: hidden;
+}
+
+.column-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 16px 18px;
+}
+
+.column-header-left{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.column-icon{
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.column-name{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  margin: 0;
+}
+
+.column-badge{
+  flex: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Cor de cada coluna, definida por modificador (verde/azul/laranja). */
+.column-soja .column-header{ background: var(--soja-bg); }
+.column-soja .column-icon{ background: var(--soja-color); color: #FFFFFF; }
+.column-soja .column-badge{ background: rgba(22,163,74,0.12); color: var(--soja-color); }
+
+.column-trigo .column-header{ background: var(--trigo-bg); }
+.column-trigo .column-icon{ background: var(--trigo-color); color: #FFFFFF; }
+.column-trigo .column-badge{ background: rgba(37,99,235,0.12); color: var(--trigo-color); }
+
+.column-milho .column-header{ background: var(--milho-bg); }
+.column-milho .column-icon{ background: var(--milho-color); color: #FFFFFF; }
+.column-milho .column-badge{ background: rgba(240,140,26,0.14); color: var(--milho-color); }
+
+.column-body{
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============ CARD DE DOCUMENTO ============ */
+
+.doc-card{
+  border: 1px solid var(--gray-light);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.doc-card-top{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.doc-logo{
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  color: #FFFFFF;
+  text-align: center;
+  line-height: 1;
+}
+
+.doc-info{
+  flex: 1;
+  min-width: 0;
+}
+
+.doc-title{
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.doc-source{
+  font-size: 12px;
+  color: var(--gray);
+  margin: 1px 0 0;
+}
+
+.doc-actions{
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.doc-action{
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #FFFFFF;
+  padding: 0;
+}
+
+.doc-action svg{ width: 13px; height: 13px; }
+
+.doc-action-whatsapp{ background: #25D366; }
+.doc-action-email{ background: var(--ink); }
+.doc-action-view{ background: var(--ink); }
+
+.doc-action-more{
+  background: none;
+  color: var(--gray);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.doc-meta{
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--gray);
+  margin: 10px 0 6px;
+}
+
+.doc-meta svg{ width: 12px; height: 12px; flex: none; }
+
+.doc-description{
+  font-size: 12.5px;
+  color: var(--gray);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.column-empty{
+  font-size: 12.5px;
+  color: var(--gray);
+  text-align: center;
+  padding: 16px 4px;
+  margin: 0;
+}
+
+.loading-msg{
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--gray);
+  font-size: 14px;
+  padding: 32px 0;
+}
+
+/* ============ BOTÃO "ADICIONAR DOCUMENTO" ============ */
+
+.btn-add-doc{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  border: 1.5px dashed var(--gray-light);
+  border-radius: 12px;
+  background: #FAFBFD;
+  color: var(--blue);
+  font-family: 'Barlow', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-add-doc:hover{
+  background: #EEF2FF;
+  border-color: var(--blue);
+}
+
+.btn-add-icon{
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-add-icon svg{ width: 12px; height: 12px; }
+
+@media (max-width: 900px){
+  .columns{ grid-template-columns: 1fr; }
+}

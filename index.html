@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitor de Mercado — Widget Pipefy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <!-- ============ MONITOR DE MERCADO (dólar / euro / clima) ============ -->
+  <section class="section-monitor">
+    <div class="widget" id="widget">
+      <div class="widget-grid">
+        <h1 class="title">Monitor de Mercado</h1>
+
+        <div class="widget-divider" aria-hidden="true"></div>
+
+        <div class="clock">
+          <p class="clock-time" id="clock-time">--:--</p>
+          <p class="clock-date" id="clock-date">--</p>
+        </div>
+
+        <div class="quotes">
+          <div class="quote-card">
+            <p class="quote-label">Cotação Dólar</p>
+            <p class="quote-date" id="date-dolar">--/--</p>
+            <p class="quote-value is-loading" id="value-dolar">R$ 00,00</p>
+          </div>
+          <div class="quote-card">
+            <p class="quote-label">Peso Argentino</p>
+            <p class="quote-date" id="date-peso">--/--</p>
+            <p class="quote-value is-loading" id="value-peso">R$ 00,00</p>
+          </div>
+        </div>
+
+        <div class="weather">
+          <p class="weather-label">Temperatura</p>
+
+          <div class="weather-main">
+            <p class="weather-value" id="weather-value">--°C</p>
+            <div class="weather-info">
+              <p class="weather-city" id="weather-city">São Luiz Gonzaga, RS</p>
+              <p class="weather-description" id="weather-description">--</p>
+              <p class="weather-humidity">💧 <span id="weather-humidity">--%</span></p>
+            </div>
+          </div>
+
+          <div class="weather-forecast">
+            <div class="forecast-item">
+              <p class="forecast-label">Amanhã <span id="forecast-tomorrow-date">--/--</span></p>
+              <div class="forecast-row">
+                <span class="forecast-stat"><span class="forecast-icon">▲</span><span id="forecast-tomorrow-max">--°</span></span>
+                <span class="forecast-stat"><span class="forecast-icon">▼</span><span id="forecast-tomorrow-min">--°</span></span>
+                <span class="forecast-stat"><span class="forecast-icon">💧</span><span id="forecast-tomorrow-humidity">--%</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COTAÇÕES AGRÍCOLAS (widgets oficiais Cepea) ============ -->
+  <section class="section-cotacoes">
+    <div class="cotacoes-widget">
+      <h2 class="cotacoes-title">Cotações Agrícolas</h2>
+      <p class="cotacoes-subtitle">Principais indicadores de preços do mercado agrícola.</p>
+
+      <div class="cepea-grid">
+
+        <!-- Soja (PR + Paranaguá) -->
+        <div class="cepea-item">
+          <!-- Widgets Produtos Cepea - www.cepea.esalq.com.br/br/widget.aspx -->
+          <script type="text/javascript" src="https://www.cepea.org.br/br/widgetproduto.js.php?fonte=arial&tamanho=14&largura=290px&corfundo=ffffff&cortexto=404145&corlinha=ffffff&id_indicador%5B%5D=77&id_indicador%5B%5D=2"></script>
+        </div>
+
+        <!-- Trigo (PR + RS) -->
+        <div class="cepea-item">
+          <!-- Widgets Produtos Cepea - www.cepea.esalq.com.br/br/widget.aspx -->
+          <script type="text/javascript" src="https://www.cepea.org.br/br/widgetproduto.js.php?fonte=arial&tamanho=14&largura=290px&corfundo=ffffff&cortexto=404145&corlinha=ffffff&id_indicador%5B%5D=178&id_indicador%5B%5D=179"></script>
+        </div>
+
+        <!-- Milho + Boi Gordo -->
+        <div class="cepea-item">
+          <!-- Widgets Produtos Cepea - www.cepea.esalq.com.br/br/widget.aspx -->
+          <script type="text/javascript" src="https://www.cepea.org.br/br/widgetproduto.js.php?fonte=arial&tamanho=14&largura=290px&corfundo=ffffff&cortexto=404145&corlinha=ffffff&id_indicador%5B%5D=12&id_indicador%5B%5D=92"></script>
+        </div>
+
+      </div>
+
+        <div class="cta-analises">
+          <p class="cta-analises-title">O mercado agrícola, em uma única visão.</p>
+          <p class="cta-analises-text">Acompanhe cotações, safras, históricos e indicadores em um ambiente atualizado e acessível sempre que precisar.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-analises">Acessar Análises</button>
+      </div>
+
+    </div>
+  </section>
+
+  <script src="index.js"></script>
+</body>
+</html>

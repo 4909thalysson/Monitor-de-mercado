@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análises de Mercado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/Pages/Styles/analises.css">
+</head>
+<body>
+
+  <div class="page">
+
+    <header class="page-header">
+      <div class="header-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M15 2v5h5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="page-title">Análises de Mercado</h1>
+        <p class="page-subtitle">Acompanhe e compartilhe documentos e análises das principais plataformas do mercado, organizados por cultura.</p>
+      </div>
+    </header>
+
+    <!-- As colunas (Soja / Trigo / Milho) e os cards de documento são
+         montados pelo index.js, que lista os arquivos direto do bucket
+         "analises" no Supabase Storage. -->
+    <div class="columns" id="columns"></div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/Pages/Logic/analises.js"></script>
+</body>
+</html>

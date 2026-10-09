@@ -1,0 +1,378 @@
+:root{
+  --blue: #2C55F0;
+  --blue-dark: #1E3FC2;
+  --blue-light: #5878F5;
+  --white: #FFFFFF;
+  --orange: #FF5A1F;
+  --card-radius: 14px;
+  --widget-radius: 28px;
+}
+
+*{ box-sizing: border-box; }
+
+body{
+  margin: 0;
+  font-family: 'Barlow', Arial, sans-serif;
+}
+
+/* ============ MONITOR DE MERCADO ============ */
+
+.section-monitor{
+  width: 100%;
+  padding: 48px 32px;
+  background: var(--blue);
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-dark) 100%);
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.widget{
+  width: 100%;
+  max-width: 960px;
+  padding: 34px 44px;
+  color: var(--white);
+}
+
+/* Grid de 2 linhas x 3 colunas: título/divisor/relógio na linha de cima e
+   cotações/divisor/temperatura na de baixo. Colocar ".quotes" e ".weather"
+   na mesma linha do grid é o que garante que os dois blocos fiquem
+   alinhados um do lado do outro, na mesma altura. */
+.widget-grid{
+  display: grid;
+  /* minmax(0, 1fr) em vez de 1fr: sem o "0", uma coluna de grid nunca
+     encolhe além do conteúdo que tem dentro (o valor da cotação, por
+     exemplo) — isso pode empurrar o grid inteiro para além da largura do
+     widget e fazer o número "cortar" visualmente quando o card ficasse
+     um pouco maior (número com mais dígitos). Com minmax(0, 1fr), a
+     coluna pode encolher normalmente e os cards de cotação quebram linha
+     (flex-wrap) em vez de estourar a largura. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    "title divider clock"
+    "quotes divider weather";
+  column-gap: 24px;
+  row-gap: 16px;
+  align-items: start;
+  margin-bottom: 28px;
+}
+
+.title{
+  grid-area: title;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-style: italic;
+  font-size: clamp(26px, 3.4vw, 36px);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.clock{
+  grid-area: clock;
+  justify-self: end;
+  text-align: right;
+}
+
+.clock-time{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.clock-date{
+  font-size: 13px;
+  opacity: 0.85;
+  margin: 4px 0 0;
+  text-transform: capitalize;
+}
+
+.weather{
+  grid-area: weather;
+  justify-self: end;
+  background: var(--white);
+  color: var(--blue);
+  border-radius: var(--card-radius);
+  padding: 14px 22px;
+  text-align: left;
+  min-width: 260px;
+}
+
+.weather-label{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin: 0 0 8px;
+}
+
+.weather-main{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.weather-value{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 34px;
+  color: var(--blue);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.weather-info{
+  display: flex;
+  flex-direction: column;
+}
+
+.weather-city{
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue);
+  margin: 0;
+}
+
+.weather-description{
+  font-size: 12px;
+  color: var(--blue);
+  opacity: 0.65;
+  margin: 2px 0 0;
+}
+
+.weather-humidity{
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--blue);
+  opacity: 0.65;
+  margin: 2px 0 0;
+}
+
+.weather-forecast{
+  display: flex;
+}
+
+.forecast-item{
+  flex: 1;
+  background: var(--blue);
+  border-radius: 8px;
+  padding: 8px 14px;
+  text-align: left;
+}
+
+.forecast-label{
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--white);
+  opacity: 0.85;
+  margin: 0 0 6px;
+}
+
+.forecast-row{
+  display: flex;
+  gap: 14px;
+}
+
+.forecast-stat{
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--white);
+}
+
+.forecast-icon{
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.quotes{
+  grid-area: quotes;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-content: start;
+  min-width: 0;
+}
+
+.quote-card{
+  background: var(--white);
+  color: var(--blue);
+  border-radius: var(--card-radius);
+  padding: 16px 22px;
+  min-width: 190px;
+  flex: 1 1 190px;
+  text-align: center;
+}
+
+.quote-label{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 0;
+}
+
+.quote-date{
+  font-size: 12px;
+  opacity: 0.7;
+  margin: 2px 0 6px;
+}
+
+.quote-value{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  /* Encolhe um pouco em vez de vazar/cortar quando o número tem mais dígitos. */
+  font-size: clamp(22px, 3.4vw, 30px);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.quote-value.is-loading{ opacity: 0.5; }
+
+/* Todos os logos ficam com a mesma altura e a mesma largura máxima —
+   object-fit: contain evita que um logo "esticado" ou com proporção
+   diferente pareça maior/menor que o outro. */
+.logos{
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 24px;
+  flex-wrap: wrap;
+  min-height: 56px;
+}
+
+.logos .logo{
+  height: 56px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+  display: block;
+}
+
+/* ============ COTAÇÕES AGRÍCOLAS (Cepea) ============ */
+
+.section-cotacoes{
+  width: 100%;
+  padding: 32px;
+  background: #FFFFFF;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.cotacoes-widget{
+  width: 100%;
+  max-width: 960px;
+}
+
+.cotacoes-title{
+  font-family: 'Barlow', sans-serif;
+  font-weight: 800;
+  font-size: clamp(22px, 2.8vw, 28px);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin: 0 0 6px;
+}
+
+.cotacoes-subtitle{
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--blue-light);
+  margin: 0 0 24px;
+}
+
+.cepea-grid{
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.cepea-item{
+  flex: 1 1 300px;
+  max-width: 330px;
+  border: 1px solid var(--blue);
+  border-radius: var(--card-radius);
+  padding: 14px;
+  background: #FFFFFF;
+  overflow: hidden; /* o widget do Cepea vem com largura fixa (definida na URL, no parâmetro "largura") */
+}
+
+.cta-analises{
+  margin-top: 32px;
+  text-align: center;
+}
+
+.cta-analises-title{
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: clamp(18px, 2.2vw, 22px);
+  text-transform: uppercase;
+  color: var(--blue);
+  margin: 0 0 4px;
+}
+
+.cta-analises-text{
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue-light);
+  margin: 0;
+}
+
+.btn{
+  display: block;
+  width: fit-content;
+  margin: 18px auto 0;
+  padding: 14px 36px;
+  border: none;
+  border-radius: 999px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.btn-primary{
+  background: var(--blue);
+  color: var(--white);
+}
+
+.btn-primary:hover{
+  background: var(--blue-dark);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 560px){
+  .widget-grid{
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "title"
+      "clock"
+      "quotes"
+      "weather";
+  }
+  .widget-divider{ display: none; }
+  .clock{ justify-self: start; text-align: left; }
+  .weather{ justify-self: start; }
+  .logos{ justify-content: flex-start; margin-top: 8px; }
+}
+
+@media (max-width: 640px){
+  .cepea-grid{ justify-content: center; }
+}
