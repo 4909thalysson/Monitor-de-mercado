@@ -10,9 +10,9 @@ const ICONS = {
 };
 
 const COLUMN_META = {
-  soja:  { label: 'Soja',  icon: ICONS.soja },
-  trigo: { label: 'Trigo', icon: ICONS.trigo },
-  milho: { label: 'Milho', icon: ICONS.milho }
+  soja:  { label: 'Soja',  Image: ASSESTS/icon-soja.png, icon: ICONS.soja },
+  trigo: { label: 'Trigo', Image: ASSESTS/icon-trigo.png, icon: ICONS.trigo },
+  milho: { label: 'Milho', Image: ASSESTS/icon-milho.png, icon: ICONS.milho }
 };
 
 const SUPABASE_URL = 'https://ixathumefunfdpkmfkjj.supabase.co';
