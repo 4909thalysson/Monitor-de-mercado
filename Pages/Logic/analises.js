@@ -136,7 +136,6 @@ function criarCardDocumento(doc) {
         <button class="doc-action doc-action-whatsapp" title="Enviar por WhatsApp">${ICONS.whatsapp}</button>
         <button class="doc-action doc-action-email" title="Enviar por e-mail">${ICONS.email}</button>
         <button class="doc-action doc-action-view" title="Visualizar">${ICONS.view}</button>
-        <button class="doc-action doc-action-more" title="Mais opções">&#8230;</button>
       </div>
     </div>
     <p class="doc-meta">${ICONS.calendar}<span>${doc.data} • ${doc.tamanho}</span></p>
@@ -156,10 +155,7 @@ function criarCardDocumento(doc) {
   card.querySelector('.doc-action-email').addEventListener('click', () => {
     console.log('Enviar por e-mail:', doc.titulo, doc.url);
   });
-  card.querySelector('.doc-action-more').addEventListener('click', () => {
-    console.log('Mais opções:', doc.titulo);
-  });
-
+  
   return card;
 }
 
