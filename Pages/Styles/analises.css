@@ -408,3 +408,193 @@ body{
 .btn-modal-cancel { background: #F1F5F9; color: #334155; }
 .btn-modal-send   { background: #2563EB; color: #fff; }
 .btn-modal-send:disabled { opacity: 0.6; cursor: wait; }
+
+/* Pop-up de envio de documento — cole este bloco no final do analises.css */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.modal {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  font-family: 'Barlow', sans-serif;
+  overflow: hidden;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.modal-close {
+  background: none;
+  border: 0;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  color: #64748B;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.modal-field input,
+.modal-field textarea {
+  padding: 10px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 400;
+}
+
+.modal-field textarea {
+  resize: vertical;
+}
+
+.modal-field input:focus,
+.modal-field textarea:focus {
+  outline: 2px solid #2563EB;
+  outline-offset: 1px;
+}
+
+/* Resumo do documento no pop-up de e-mail */
+.modal-doc-resumo {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  font-size: 14px;
+  color: #0F172A;
+}
+
+.modal-doc-resumo span {
+  color: #64748B;
+}
+
+/* O atributo hidden perde para display:flex/block; isto garante que funcione */
+.modal-error[hidden],
+.modal-success[hidden] {
+  display: none;
+}
+
+.modal-success {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #F0FDF4;
+  color: #15803D;
+  font-size: 14px;
+}
+
+.modal-error {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #FEF2F2;
+  color: #B91C1C;
+  font-size: 14px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.btn-modal {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-modal-cancel { background: #F1F5F9; color: #334155; }
+.btn-modal-send   { background: #2563EB; color: #fff; }
+.btn-modal-send:disabled { opacity: 0.6; cursor: wait; }
+
+.column-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Lista de contatos do pop-up de WhatsApp */
+.contato-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contato-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #CBD5E1;
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.contato-btn:hover {
+  background: #F0FDF4;
+  border-color: #16A34A;
+}
+
+.contato-nome {
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.contato-numero {
+  font-size: 13px;
+  color: #64748B;
+}
+
+.contato-btn-outro {
+  border-style: dashed;
+}

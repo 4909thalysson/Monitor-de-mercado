@@ -32,6 +32,16 @@ const BUCKET = 'analises_mercado';
 // Endpoint do Formspree usado pelo botão "Enviar por e-mail".
 const FORMSPREE_URL = 'https://formspree.io/f/xbgdqgwz';
 
+// Contatos do botão de WhatsApp. Para acrescentar mais, copie uma linha:
+// "numero" com DDI + DDD, só dígitos (55 = Brasil). O "nome" aparece no pop-up.
+// Se a lista ficar vazia, o WhatsApp abre para a pessoa escolher o contato.
+const WHATSAPP_CONTATOS = [
+  { nome: 'Thalysson', numero: '555591079683' },
+  { nome: 'Jason', numero: '55559979-9200' },
+  { nome: 'Rafael', numero: '55559659-9200' }
+
+];
+
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* --------------------------------------------------------------------------
@@ -208,14 +218,14 @@ function criarCardDocumento(doc) {
     ${doc.descricao ? `<p class="doc-description">${escaparHtml(doc.descricao)}</p>` : ''}
   `;
 
-  // "Visualizar" abre o arquivo de verdade (URL do Storage) e "e-mail" abre
-  // o pop-up que envia pelo Formspree. O WhatsApp ainda é placeholder —
-  // pronto pra receber a integração real. Por enquanto só avisa no console.
+  // "Visualizar" abre o arquivo de verdade (URL do Storage), "e-mail" abre
+  // o pop-up que envia pelo Formspree e "WhatsApp" abre uma conversa com a
+  // mensagem e o link do documento já preenchidos (wa.me).
   card.querySelector('.doc-action-view').addEventListener('click', () => {
     if (doc.url) window.open(doc.url, '_blank');
   });
   card.querySelector('.doc-action-whatsapp').addEventListener('click', () => {
-    console.log('Enviar por WhatsApp:', doc.titulo, doc.url);
+    abrirWhatsApp(doc);
   });
   card.querySelector('.doc-action-email').addEventListener('click', () => {
     abrirModalEmail(doc);
@@ -342,6 +352,85 @@ function abrirModalUpload(chave) {
   });
 
   inputFonte.focus();
+}
+
+/* --------------------------------------------------------------------------
+   Envio por WhatsApp (link wa.me)
+   O WhatsApp não aceita anexo por link: a mensagem leva o título, a fonte e
+   o link do documento. A pessoa só precisa tocar em "enviar" no WhatsApp.
+   Os contatos ficam em WHATSAPP_CONTATOS (no início do arquivo).
+   -------------------------------------------------------------------------- */
+
+// Monta o link wa.me com a mensagem pronta. Número vazio = a pessoa escolhe
+// o contato dentro do WhatsApp.
+function montarLinkWhatsApp(doc, numero) {
+  const linhas = [`*${doc.titulo}*`];
+  if (doc.fonte && doc.fonte !== '—') linhas.push(`Fonte: ${doc.fonte}`);
+  linhas.push('', doc.url);
+
+  const texto = encodeURIComponent(linhas.join('\n'));
+  return `https://wa.me/${numero || ''}?text=${texto}`;
+}
+
+function abrirWhatsApp(doc) {
+  if (WHATSAPP_CONTATOS.length === 0) {
+    window.open(montarLinkWhatsApp(doc, ''), '_blank', 'noopener');
+    return;
+  }
+  abrirModalWhatsApp(doc);
+}
+
+// Pop-up com um botão por contato (e "Outro contato" para escolher no WhatsApp).
+function abrirModalWhatsApp(doc) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-whats-titulo">
+      <div class="modal-header">
+        <h3 id="modal-whats-titulo">Enviar por WhatsApp</h3>
+        <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="modal-form">
+        <p class="modal-doc-resumo">
+          <strong>${escaparHtml(doc.titulo)}</strong><br>
+          <span>${escaparHtml(doc.fonte)}</span>
+        </p>
+
+        <div class="contato-lista">
+          ${WHATSAPP_CONTATOS.map((c, i) => `
+            <button type="button" class="contato-btn" data-indice="${i}">
+              <span class="contato-nome">${escaparHtml(c.nome)}</span>
+              <span class="contato-numero">+${escaparHtml(c.numero)}</span>
+            </button>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  function fechar() {
+    document.removeEventListener('keydown', aoPressionarTecla);
+    overlay.remove();
+  }
+
+  function aoPressionarTecla(e) {
+    if (e.key === 'Escape') fechar();
+  }
+
+  document.addEventListener('keydown', aoPressionarTecla);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar(); });
+  overlay.querySelector('.modal-close').addEventListener('click', fechar);
+
+  overlay.querySelectorAll('.contato-btn').forEach((botao) => {
+    botao.addEventListener('click', () => {
+      const indice = botao.dataset.indice;
+      const numero = indice === 'outro' ? '' : WHATSAPP_CONTATOS[Number(indice)].numero;
+      window.open(montarLinkWhatsApp(doc, numero), '_blank', 'noopener');
+      fechar();
+    });
+  });
 }
 
 /* --------------------------------------------------------------------------
