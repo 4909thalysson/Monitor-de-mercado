@@ -10,9 +10,9 @@ const ICONS = {
 };
 
 const COLUMN_META = {
-  soja:  { label: 'Soja',  Image: ASSESTS/icon-soja.png, icon: ICONS.soja },
-  trigo: { label: 'Trigo', Image: ASSESTS/icon-trigo.png, icon: ICONS.trigo },
-  milho: { label: 'Milho', Image: ASSESTS/icon-milho.png, icon: ICONS.milho }
+  soja:  { label: 'Soja',  Image: '/ASSESTS/icon-soja.png',  icon: ICONS.soja },
+  trigo: { label: 'Trigo', Image: '/ASSESTS/icon-trigo.png', icon: ICONS.trigo },
+  milho: { label: 'Milho', Image: '/ASSESTS/icon-milho.png', icon: ICONS.milho }
 };
 
 const SUPABASE_URL = 'https://ixathumefunfdpkmfkjj.supabase.co';
@@ -209,7 +209,9 @@ function criarColuna(chave, docs) {
   coluna.innerHTML = `
     <div class="column-header">
       <div class="column-header-left">
-        <div class="column-icon">${meta.icon}</div>
+        <div class="column-icon">
+          <img src="${meta.Image}" alt="${meta.label}">
+        </div>
         <h2 class="column-name">${meta.label}</h2>
       </div>
       <span class="column-badge">${docs.length} documento${docs.length === 1 ? '' : 's'}</span>

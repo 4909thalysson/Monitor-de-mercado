@@ -108,6 +108,13 @@ body{
   justify-content: center;
 }
 
+.column-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
 .column-name{
   font-family: 'Barlow Condensed', sans-serif;
   font-weight: 800;
