@@ -38,7 +38,10 @@ const FORMSPREE_URL = 'https://formspree.io/f/xbgdqgwz';
 const WHATSAPP_CONTATOS = [
   { nome: 'Thalysson', numero: '555591079683' },
   { nome: 'Jason', numero: '55559979-9200' },
-  { nome: 'Rafael', numero: '55559659-9200' }
+  { nome: 'Rafael', numero: '55559659-9200' },
+  { nome: 'Eduardo Petry', numero: '554789228620' }
+
+
 
 ];
 
