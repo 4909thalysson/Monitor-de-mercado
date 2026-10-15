@@ -1,3 +1,12 @@
+/* ==========================================================================
+   Análises de Mercado — lógica da página
+   - Lista os documentos do bucket "analises_mercado" (pastas soja/trigo/milho)
+   - Ícones das culturas vêm dos PNGs da pasta ASSESTS (SVG como fallback)
+   - Botão "Adicionar documento" visível a todos (EXIGIR_LOGIN = false);
+     mude a constante para true quando o login do admin estiver pronto
+   - Envio de documento por pop-up (Fonte, Título e Arquivo)
+   ========================================================================== */
+
 const ICONS = {
   whatsapp: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20Zm4.4-6c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1-.7-.3-1.5-.8-2.1-1.5-.6-.6-1-1.3-1.2-1.6-.1-.2 0-.4.1-.5l.4-.5c.1-.1.1-.3.1-.4s-.5-1.2-.7-1.6c-.2-.4-.3-.4-.5-.4h-.4c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.5 3.9 3.4.5.2 1 .4 1.3.5.5.2 1 .1 1.4.1.4-.1 1.4-.6 1.6-1.1.2-.5.2-.9.1-1Z"/></svg>',
   email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -9,17 +18,34 @@ const ICONS = {
   milho: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="3" width="8" height="17" rx="4" stroke-linejoin="round"/><path d="M9 7h6M9 10h6M9 13h6M9 16h6" stroke-linecap="round"/></svg>'
 };
 
+// "imagem" = PNG da pasta ASSESTS (principal). "icon" = SVG genérico (fallback).
 const COLUMN_META = {
-  soja:  { label: 'Soja',  Image: '/ASSESTS/icon-soja.png',  icon: ICONS.soja },
-  trigo: { label: 'Trigo', Image: '/ASSESTS/icon-trigo.png', icon: ICONS.trigo },
-  milho: { label: 'Milho', Image: '/ASSESTS/icon-milho.png', icon: ICONS.milho }
+  soja:  { label: 'Soja',  imagem: '/ASSESTS/icon-soja.png',  icon: ICONS.soja },
+  trigo: { label: 'Trigo', imagem: '/ASSESTS/icon-trigo.png', icon: ICONS.trigo },
+  milho: { label: 'Milho', imagem: '/ASSESTS/icon-milho.png', icon: ICONS.milho }
 };
 
 const SUPABASE_URL = 'https://ixathumefunfdpkmfkjj.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4YXRodW1lZnVuZmRwa21ma2pqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA1OTUyMzcsImV4cCI6MjEwNjE3MTIzN30.lw63gsDVWU9V7pOLiHvuh4OlSCSBxfxKh1TRR-k1F7k';
 const BUCKET = 'analises_mercado';
 
+// Endpoint do Formspree usado pelo botão "Enviar por e-mail".
+const FORMSPREE_URL = 'https://formspree.io/f/xbgdqgwz';
+
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* --------------------------------------------------------------------------
+   Utilitários
+   -------------------------------------------------------------------------- */
+
+function escaparHtml(texto) {
+  return String(texto ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 function formatarTamanho(bytes) {
   if (bytes == null) return '--';
@@ -67,6 +93,42 @@ function logoParaFonte(fonte) {
   const text = fonte ? fonte.slice(0, 4).toUpperCase() : '?';
   return { text, bg };
 }
+
+// O Supabase Storage rejeita chaves com acento/caractere especial
+// ("Invalid key"). Remove os acentos (NFD + descarta os diacríticos) e
+// troca qualquer coisa fora de letras/números/espaço/ponto/traço/parênteses
+// por "-", mantendo "Fonte - Título.ext" ainda legível.
+function sanitizarNomeArquivo(nome) {
+  const semAcento = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  // Mantém "&" pra não quebrar fontes como "Safras & Mercado" (viraria um
+  // segundo " - " e confundiria o parser de fonte/título).
+  return semAcento.replace(/[^a-zA-Z0-9 ._()&-]/g, '-');
+}
+
+// Evita " - " dentro dos campos Fonte/Título, que confundiria o parser.
+function limparCampo(valor) {
+  return valor.trim().replace(/\s+-\s+/g, '-');
+}
+
+/* --------------------------------------------------------------------------
+   Autenticação
+   EXIGIR_LOGIN = false  → todo mundo vê o botão de upload (modo atual, sem
+                           policies no Supabase ainda).
+   EXIGIR_LOGIN = true   → só quem estiver logado vê o botão. Mude para true
+                           depois de criar o admin e as policies no Supabase;
+                           a proteção real está nas policies, isto é só interface.
+   -------------------------------------------------------------------------- */
+
+const EXIGIR_LOGIN = false;
+
+async function obterSessao() {
+  const { data } = await supabaseClient.auth.getSession();
+  return data.session;
+}
+
+/* --------------------------------------------------------------------------
+   Acesso aos dados (Supabase Storage)
+   -------------------------------------------------------------------------- */
 
 const api = {
   async getAnalises() {
@@ -122,15 +184,19 @@ const api = {
   }
 };
 
+/* --------------------------------------------------------------------------
+   Card de documento
+   -------------------------------------------------------------------------- */
+
 function criarCardDocumento(doc) {
   const card = document.createElement('div');
   card.className = 'doc-card';
   card.innerHTML = `
     <div class="doc-card-top">
-      <div class="doc-logo" style="background:${doc.logo.bg}">${doc.logo.text}</div>
+      <div class="doc-logo" style="background:${doc.logo.bg}">${escaparHtml(doc.logo.text)}</div>
       <div class="doc-info">
-        <p class="doc-title">${doc.titulo}</p>
-        <p class="doc-source">${doc.fonte}</p>
+        <p class="doc-title">${escaparHtml(doc.titulo)}</p>
+        <p class="doc-source">${escaparHtml(doc.fonte)}</p>
       </div>
       <div class="doc-actions">
         <button class="doc-action doc-action-whatsapp" title="Enviar por WhatsApp">${ICONS.whatsapp}</button>
@@ -138,14 +204,13 @@ function criarCardDocumento(doc) {
         <button class="doc-action doc-action-view" title="Visualizar">${ICONS.view}</button>
       </div>
     </div>
-    <p class="doc-meta">${ICONS.calendar}<span>${doc.data} • ${doc.tamanho}</span></p>
-    ${doc.descricao ? `<p class="doc-description">${doc.descricao}</p>` : ''}
+    <p class="doc-meta">${ICONS.calendar}<span>${escaparHtml(doc.data)} • ${escaparHtml(doc.tamanho)}</span></p>
+    ${doc.descricao ? `<p class="doc-description">${escaparHtml(doc.descricao)}</p>` : ''}
   `;
 
-  // "Visualizar" já abre o arquivo de verdade (URL do Storage). WhatsApp,
-  // e-mail e "mais opções" ainda são placeholders — prontos pra receber a
-  // integração real (ex.: WhatsApp Business API pra mandar o PDF direto,
-  // um endpoint de e-mail). Por enquanto só avisam no console.
+  // "Visualizar" abre o arquivo de verdade (URL do Storage) e "e-mail" abre
+  // o pop-up que envia pelo Formspree. O WhatsApp ainda é placeholder —
+  // pronto pra receber a integração real. Por enquanto só avisa no console.
   card.querySelector('.doc-action-view').addEventListener('click', () => {
     if (doc.url) window.open(doc.url, '_blank');
   });
@@ -153,51 +218,258 @@ function criarCardDocumento(doc) {
     console.log('Enviar por WhatsApp:', doc.titulo, doc.url);
   });
   card.querySelector('.doc-action-email').addEventListener('click', () => {
-    console.log('Enviar por e-mail:', doc.titulo, doc.url);
+    abrirModalEmail(doc);
   });
-  
+
   return card;
 }
 
-// O Supabase Storage rejeita chaves com acento/caractere especial
-// ("Invalid key"). Remove os acentos (NFD + descarta os diacríticos) e
-// troca qualquer coisa fora de letras/números/espaço/ponto/traço/parênteses
-// por "-", mantendo "Fonte - Título.ext" ainda legível.
-function sanitizarNomeArquivo(nome) {
-  const semAcento = nome.normalize('NFD').replace(/[̀-ͯ]/g, '');
-  // Mantém "&" pra não quebrar fontes como "Safras & Mercado" (viraria um
-  // segundo " - " e confundiria o parser de fonte/título).
-  return semAcento.replace(/[^a-zA-Z0-9 ._()&-]/g, '-');
-}
+/* --------------------------------------------------------------------------
+   Pop-up de envio de documento
+   -------------------------------------------------------------------------- */
 
-// Abre o seletor de arquivo do sistema e sobe o escolhido pra pasta da
-// cultura dentro do bucket. Pra sair certinho no card, nomeie o arquivo
-// como "Fonte - Título.pdf" antes de selecionar (sem acento — veja
-// sanitizarNomeArquivo acima).
-function acionarUpload(chave) {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.pdf,.doc,.docx,.xls,.xlsx';
-  input.addEventListener('change', async () => {
-    const arquivo = input.files[0];
-    if (!arquivo) return;
+function abrirModalUpload(chave) {
+  const meta = COLUMN_META[chave];
 
-    const nomeSanitizado = sanitizarNomeArquivo(arquivo.name);
-    const caminho = `${chave}/${nomeSanitizado}`;
-    const { error } = await supabaseClient.storage.from(BUCKET).upload(caminho, arquivo, { upsert: false });
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+      <div class="modal-header">
+        <h3 id="modal-titulo">Adicionar documento · ${escaparHtml(meta.label)}</h3>
+        <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
+      </div>
 
-    if (error) {
-      alert(`Não foi possível enviar o arquivo: ${error.message}`);
-      console.error(error);
+      <form class="modal-form" novalidate>
+        <label class="modal-field">
+          <span>Fonte</span>
+          <input type="text" name="fonte" placeholder="Ex.: CEPEA" autocomplete="off" required>
+        </label>
+
+        <label class="modal-field">
+          <span>Título</span>
+          <input type="text" name="titulo" placeholder="Ex.: Boletim semanal de soja" required>
+        </label>
+
+        <label class="modal-field">
+          <span>Arquivo</span>
+          <input type="file" name="arquivo" accept=".pdf,.doc,.docx,.xls,.xlsx" required>
+        </label>
+
+        <p class="modal-error" hidden></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-modal btn-modal-cancel">Cancelar</button>
+          <button type="submit" class="btn-modal btn-modal-send">Enviar</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const form = overlay.querySelector('.modal-form');
+  const inputFonte = form.elements.fonte;
+  const inputTitulo = form.elements.titulo;
+  const inputArquivo = form.elements.arquivo;
+  const erroEl = overlay.querySelector('.modal-error');
+  const btnEnviar = overlay.querySelector('.btn-modal-send');
+
+  function fechar() {
+    document.removeEventListener('keydown', aoPressionarTecla);
+    overlay.remove();
+  }
+
+  function aoPressionarTecla(e) {
+    if (e.key === 'Escape') fechar();
+  }
+
+  function mostrarErro(msg) {
+    erroEl.textContent = msg;
+    erroEl.hidden = false;
+  }
+
+  document.addEventListener('keydown', aoPressionarTecla);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar(); });
+  overlay.querySelector('.modal-close').addEventListener('click', fechar);
+  overlay.querySelector('.btn-modal-cancel').addEventListener('click', fechar);
+
+  // Ao escolher o arquivo, sugere o título a partir do nome (se ainda estiver vazio)
+  inputArquivo.addEventListener('change', () => {
+    const arquivo = inputArquivo.files[0];
+    if (arquivo && !inputTitulo.value.trim()) {
+      inputTitulo.value = arquivo.name.replace(/\.[^/.]+$/, '');
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    erroEl.hidden = true;
+
+    const arquivo = inputArquivo.files[0];
+    const fonte = limparCampo(inputFonte.value);
+    const titulo = limparCampo(inputTitulo.value);
+
+    if (!fonte || !titulo || !arquivo) {
+      mostrarErro('Preencha a fonte, o título e selecione um arquivo.');
       return;
     }
 
+    const extensao = (arquivo.name.match(/\.[^.]+$/) || [''])[0].toLowerCase();
+    const nomeFinal = sanitizarNomeArquivo(`${fonte} - ${titulo}${extensao}`);
+    const caminho = `${chave}/${nomeFinal}`;
+
+    btnEnviar.disabled = true;
+    btnEnviar.textContent = 'Enviando…';
+
+    const { error } = await supabaseClient.storage
+      .from(BUCKET)
+      .upload(caminho, arquivo, { upsert: false });
+
+    if (error) {
+      console.error(error);
+      const duplicado = /already exists|duplicate/i.test(error.message);
+      mostrarErro(duplicado
+        ? 'Já existe um documento com essa fonte e título nesta cultura.'
+        : `Não foi possível enviar o arquivo: ${error.message}`);
+      btnEnviar.disabled = false;
+      btnEnviar.textContent = 'Enviar';
+      return;
+    }
+
+    fechar();
     await renderPagina();
   });
-  input.click();
+
+  inputFonte.focus();
 }
 
-function criarColuna(chave, docs) {
+/* --------------------------------------------------------------------------
+   Pop-up de envio por e-mail (Formspree)
+   -------------------------------------------------------------------------- */
+
+function abrirModalEmail(doc) {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-email-titulo">
+      <div class="modal-header">
+        <h3 id="modal-email-titulo">Enviar por e-mail</h3>
+        <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
+      </div>
+
+      <form class="modal-form" novalidate>
+        <p class="modal-doc-resumo">
+          <strong>${escaparHtml(doc.titulo)}</strong><br>
+          <span>${escaparHtml(doc.fonte)}</span>
+        </p>
+
+        <label class="modal-field">
+          <span>E-mail do destinatário</span>
+          <input type="email" name="email" placeholder="nome@empresa.com" required>
+        </label>
+
+        <label class="modal-field">
+          <span>Mensagem (opcional)</span>
+          <textarea name="mensagem" rows="3" placeholder="Segue a análise de mercado."></textarea>
+        </label>
+
+        <p class="modal-error" hidden></p>
+        <p class="modal-success" hidden></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-modal btn-modal-cancel">Cancelar</button>
+          <button type="submit" class="btn-modal btn-modal-send">Enviar</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const form = overlay.querySelector('.modal-form');
+  const inputEmail = form.elements.email;
+  const inputMensagem = form.elements.mensagem;
+  const erroEl = overlay.querySelector('.modal-error');
+  const sucessoEl = overlay.querySelector('.modal-success');
+  const btnEnviar = overlay.querySelector('.btn-modal-send');
+
+  function fechar() {
+    document.removeEventListener('keydown', aoPressionarTecla);
+    overlay.remove();
+  }
+
+  function aoPressionarTecla(e) {
+    if (e.key === 'Escape') fechar();
+  }
+
+  function mostrarErro(msg) {
+    sucessoEl.hidden = true;
+    erroEl.textContent = msg;
+    erroEl.hidden = false;
+  }
+
+  document.addEventListener('keydown', aoPressionarTecla);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar(); });
+  overlay.querySelector('.modal-close').addEventListener('click', fechar);
+  overlay.querySelector('.btn-modal-cancel').addEventListener('click', fechar);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    erroEl.hidden = true;
+
+    const email = inputEmail.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      mostrarErro('Informe um e-mail válido.');
+      return;
+    }
+
+    btnEnviar.disabled = true;
+    btnEnviar.textContent = 'Enviando…';
+
+    try {
+      const resposta = await fetch(FORMSPREE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          email,
+          _subject: `Análise de mercado: ${doc.titulo}`,
+          documento: doc.titulo,
+          fonte: doc.fonte,
+          link: doc.url,
+          message: inputMensagem.value.trim() || 'Segue o documento em anexo no link abaixo.'
+        })
+      });
+
+      if (!resposta.ok) {
+        let detalhe = '';
+        try {
+          const corpo = await resposta.json();
+          detalhe = (corpo.errors || []).map((er) => er.message).join(' ');
+        } catch (_) { /* resposta sem JSON */ }
+        throw new Error(detalhe || `Erro ${resposta.status}`);
+      }
+
+      sucessoEl.textContent = 'E-mail enviado!';
+      sucessoEl.hidden = false;
+      btnEnviar.textContent = 'Enviado';
+      setTimeout(fechar, 1500);
+    } catch (erro) {
+      console.error(erro);
+      mostrarErro(`Não foi possível enviar: ${erro.message}`);
+      btnEnviar.disabled = false;
+      btnEnviar.textContent = 'Enviar';
+    }
+  });
+
+  inputEmail.focus();
+}
+
+/* --------------------------------------------------------------------------
+   Coluna (cultura)
+   -------------------------------------------------------------------------- */
+
+function criarColuna(chave, docs, logado) {
   const meta = COLUMN_META[chave];
 
   const coluna = document.createElement('div');
@@ -206,14 +478,20 @@ function criarColuna(chave, docs) {
     <div class="column-header">
       <div class="column-header-left">
         <div class="column-icon">
-          <img src="${meta.Image}" alt="${meta.label}">
+          <img src="${meta.imagem}" alt="${escaparHtml(meta.label)}">
         </div>
-        <h2 class="column-name">${meta.label}</h2>
+        <h2 class="column-name">${escaparHtml(meta.label)}</h2>
       </div>
       <span class="column-badge">${docs.length} documento${docs.length === 1 ? '' : 's'}</span>
     </div>
     <div class="column-body"></div>
   `;
+
+  // Se o PNG não carregar (caminho errado, arquivo ausente), volta pro SVG genérico
+  const iconeEl = coluna.querySelector('.column-icon');
+  iconeEl.querySelector('img').addEventListener('error', () => {
+    iconeEl.innerHTML = meta.icon;
+  });
 
   const body = coluna.querySelector('.column-body');
 
@@ -226,25 +504,37 @@ function criarColuna(chave, docs) {
     docs.forEach((doc) => body.appendChild(criarCardDocumento(doc)));
   }
 
-  const btnAdd = document.createElement('button');
-  btnAdd.className = 'btn-add-doc';
-  btnAdd.innerHTML = `<span class="btn-add-icon">${ICONS.plus}</span> Adicionar documento`;
-  btnAdd.addEventListener('click', () => acionarUpload(chave));
-  body.appendChild(btnAdd);
+  // Com EXIGIR_LOGIN ligado, só quem está logado vê o botão de envio.
+  if (!EXIGIR_LOGIN || logado) {
+    const btnAdd = document.createElement('button');
+    btnAdd.className = 'btn-add-doc';
+    btnAdd.innerHTML = `<span class="btn-add-icon">${ICONS.plus}</span> Adicionar documento`;
+    btnAdd.addEventListener('click', () => abrirModalUpload(chave));
+    body.appendChild(btnAdd);
+  }
 
   return coluna;
 }
+
+/* --------------------------------------------------------------------------
+   Renderização da página
+   -------------------------------------------------------------------------- */
 
 async function renderPagina() {
   const container = document.getElementById('columns');
   container.innerHTML = '<p class="loading-msg">Carregando documentos…</p>';
 
-  const dados = await api.getAnalises();
+  const [dados, sessao] = await Promise.all([api.getAnalises(), obterSessao()]);
   container.innerHTML = '';
 
   Object.keys(COLUMN_META).forEach((chave) => {
-    container.appendChild(criarColuna(chave, dados[chave] || []));
+    container.appendChild(criarColuna(chave, dados[chave] || [], !!sessao));
   });
 }
+
+// Se o login/logout acontecer em outra aba, a página atualiza sozinha.
+supabaseClient.auth.onAuthStateChange((evento) => {
+  if (evento === 'SIGNED_IN' || evento === 'SIGNED_OUT') renderPagina();
+});
 
 renderPagina();
