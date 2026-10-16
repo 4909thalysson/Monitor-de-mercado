@@ -406,6 +406,10 @@ function abrirModalWhatsApp(doc) {
               <span class="contato-nome">${escaparHtml(c.nome)}</span>
               <span class="contato-numero">+${escaparHtml(c.numero)}</span>
             </button>`).join('')}
+            <button type="button" class="contato-btn contato-btn-outro" data-indice="outro">
+              <span class="contato-nome">Outro contato</span>
+              <span class="contato-numero">Escolher no WhatsApp</span>
+          </button>
         </div>
       </div>
     </div>
