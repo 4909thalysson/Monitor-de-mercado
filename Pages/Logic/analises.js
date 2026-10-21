@@ -1,12 +1,3 @@
-/* ==========================================================================
-   Análises de Mercado — lógica da página
-   - Lista os documentos do bucket "analises_mercado" (pastas soja/trigo/milho)
-   - Ícones das culturas vêm dos PNGs da pasta ASSESTS (SVG como fallback)
-   - Botão "Adicionar documento" visível a todos (EXIGIR_LOGIN = false);
-     mude a constante para true quando o login do admin estiver pronto
-   - Envio de documento por pop-up (Fonte, Título e Arquivo)
-   ========================================================================== */
-
 const ICONS = {
   whatsapp: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2Zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20Zm4.4-6c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1-.7-.3-1.5-.8-2.1-1.5-.6-.6-1-1.3-1.2-1.6-.1-.2 0-.4.1-.5l.4-.5c.1-.1.1-.3.1-.4s-.5-1.2-.7-1.6c-.2-.4-.3-.4-.5-.4h-.4c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.5 3.9 3.4.5.2 1 .4 1.3.5.5.2 1 .1 1.4.1.4-.1 1.4-.6 1.6-1.1.2-.5.2-.9.1-1Z"/></svg>',
   email: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -32,9 +23,6 @@ const BUCKET = 'analises_mercado';
 // Endpoint do Formspree usado pelo botão "Enviar por e-mail".
 const FORMSPREE_URL = 'https://formspree.io/f/xbgdqgwz';
 
-// Contatos do botão de WhatsApp. Para acrescentar mais, copie uma linha:
-// "numero" com DDI + DDD, só dígitos (55 = Brasil). O "nome" aparece no pop-up.
-// Se a lista ficar vazia, o WhatsApp abre para a pessoa escolher o contato.
 const WHATSAPP_CONTATOS = [
   { nome: 'Thalysson', numero: '555591079683' },
   { nome: 'Jason', numero: '55559979-9200' },
