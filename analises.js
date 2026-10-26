@@ -567,6 +567,7 @@ function montarLinkWhatsApp(doc, numero) {
     '',
     `Você está recebendo um informativo com as principais analises de ${doc.cultura}. Boa Leitura !`,
     '',
+    'para mais informações acesse o link abaixo:https://monitormercado-six.vercel.app/',
     `*${doc.titulo}*`
   ];
   if (doc.fonte && doc.fonte !== '—') linhas.push(`Fonte: ${doc.fonte}`);
