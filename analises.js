@@ -28,9 +28,6 @@ const WHATSAPP_CONTATOS = [
   { nome: 'Jason', numero: '55559979-9200' },
   { nome: 'Rafael', numero: '55559659-9200' },
   { nome: 'Eduardo Petry', numero: '554789228620' }
-
-
-
 ];
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -38,7 +35,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 const HG_WEATHER_KEY = 'ad3c14fd';
 const HG_FINANCE_KEY = 'ad3c14fd';
 const CITY_NAME = 'São Luiz Gonzaga,RS';
- 
+
 // Troque pela URL da página de Análises assim que ela estiver publicada.
 const ANALISES_URL = './Pages/analises.html';
 
@@ -50,12 +47,12 @@ function fetchFinance() {
   }
   return financePromise;
 }
- 
+
 function fetchWeather() {
   const url = `https://api.hgbrasil.com/weather?format=json-cors&key=${HG_WEATHER_KEY}&city_name=${encodeURIComponent(CITY_NAME)}`;
   return fetch(url).then(res => res.json());
 }
- 
+
 const marketApi = {
   async getCotacaoDolar() {
     const data = await fetchFinance();
@@ -71,7 +68,7 @@ const marketApi = {
     const data = await fetchWeather();
     const r = data.results;
     const forecast = r.forecast || [];
- 
+
     // Calcula a data de amanhã (hoje +1) por conta própria, em vez de
     // confiar na posição do item dentro do array "forecast" — e usa isso
     // pra achar o dia certo pelo campo "date" (formato dd/mm), que é mais
@@ -79,10 +76,10 @@ const marketApi = {
     const hoje = new Date();
     const amanhaDate = new Date(hoje);
     amanhaDate.setDate(hoje.getDate() + 1);
- 
+
     const amanhaStr = formatarData(amanhaDate);
     const amanha = forecast.find(f => f.date === amanhaStr);
- 
+
     return {
       cidade: r.city,
       valorC: r.temp,
@@ -95,20 +92,20 @@ const marketApi = {
     };
   }
 };
- 
+
 function formatarData(date) {
   const dd = String(date.getDate()).padStart(2, '0');
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   return `${dd}/${mm}`;
 }
- 
+
 // O Peso Argentino vale poucos centavos de Real (ex.: R$ 0,0031), então
 // com 2 casas decimais ele sempre apareceria como "R$ 0,00" — por isso o
 // número de casas é configurável (padrão 2, mas o peso usa 4).
 function formatarMoeda(valor, casas = 2) {
   return `R$ ${valor.toFixed(casas).replace('.', ',')}`;
 }
- 
+
 // Usa allSettled (em vez de Promise.all) pra que, se um só endpoint falhar
 // (ex.: chave errada, sem internet), os outros dois blocos ainda apareçam.
 async function renderWidget() {
@@ -117,7 +114,7 @@ async function renderWidget() {
     marketApi.getCotacaoPesoArgentino(),
     marketApi.getTemperatura()
   ]);
- 
+
   const dolarEl = document.getElementById('value-dolar');
   if (dolar.status === 'fulfilled') {
     dolarEl.textContent = formatarMoeda(dolar.value.valor);
@@ -127,7 +124,7 @@ async function renderWidget() {
     console.error('Erro ao buscar cotação do dólar:', dolar.reason);
   }
   dolarEl.classList.remove('is-loading');
- 
+
   const pesoEl = document.getElementById('value-peso');
   if (peso.status === 'fulfilled') {
     pesoEl.textContent = formatarMoeda(peso.value.valor, 4);
@@ -137,14 +134,14 @@ async function renderWidget() {
     console.error('Erro ao buscar cotação do peso argentino:', peso.reason);
   }
   pesoEl.classList.remove('is-loading');
- 
+
   if (clima.status === 'fulfilled') {
     document.getElementById('weather-city').textContent = clima.value.cidade;
     document.getElementById('weather-value').textContent = `${clima.value.valorC}°C`;
     document.getElementById('weather-description').textContent = clima.value.descricao || '--';
     document.getElementById('weather-humidity').textContent =
       clima.value.umidade != null ? `${clima.value.umidade}%` : '--%';
- 
+
     document.getElementById('forecast-tomorrow-date').textContent = clima.value.amanhaData;
     document.getElementById('forecast-tomorrow-max').textContent =
       clima.value.amanhaMax != null ? `${clima.value.amanhaMax}°` : '--°';
@@ -162,17 +159,17 @@ async function renderWidget() {
     console.error('Erro ao buscar temperatura:', clima.reason);
   }
 }
- 
+
 renderWidget();
- 
+
 // ---------------------------------------------------------------------
 // Relógio (hora + dia/semana/ano) — atualiza a cada segundo.
 // ---------------------------------------------------------------------
 function atualizarRelogio() {
   const agora = new Date();
- 
+
   const hora = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
- 
+
   let data = agora.toLocaleDateString('pt-BR', {
     weekday: 'long',
     day: '2-digit',
@@ -181,11 +178,11 @@ function atualizarRelogio() {
   });
   // toLocaleDateString devolve tudo em minúsculo — deixa a primeira letra maiúscula
   data = data.charAt(0).toUpperCase() + data.slice(1);
- 
+
   document.getElementById('clock-time').textContent = hora;
   document.getElementById('clock-date').textContent = data;
 }
- 
+
 atualizarRelogio();
 setInterval(atualizarRelogio, 1000);
 
@@ -360,11 +357,11 @@ function criarCardDocumento(doc) {
     ${doc.descricao ? `<p class="doc-description">${escaparHtml(doc.descricao)}</p>` : ''}
   `;
 
-  // "Visualizar" abre o arquivo de verdade (URL do Storage), "e-mail" abre
+  // "Visualizar" abre o documento num pop-up (iframe), "e-mail" abre
   // o pop-up que envia pelo Formspree e "WhatsApp" abre uma conversa com a
   // mensagem e o link do documento já preenchidos (wa.me).
   card.querySelector('.doc-action-view').addEventListener('click', () => {
-    if (doc.url) window.open(doc.url, '_blank');
+    if (doc.url) abrirModalVisualizador(doc);
   });
   card.querySelector('.doc-action-whatsapp').addEventListener('click', () => {
     abrirWhatsApp(doc);
@@ -494,6 +491,64 @@ function abrirModalUpload(chave) {
   });
 
   inputFonte.focus();
+}
+
+/* --------------------------------------------------------------------------
+   Pop-up de visualização do documento
+   PDF abre direto no iframe. Word/Excel não renderizam no iframe, então
+   passam pelo visualizador online da Microsoft (precisa de URL pública).
+   -------------------------------------------------------------------------- */
+
+function abrirModalVisualizador(doc) {
+  const caminhoLimpo = doc.url.split('?')[0];
+  const extensao = ((caminhoLimpo.match(/\.([^./]+)$/) || [])[1] || '').toLowerCase();
+
+  const ehOffice = ['doc', 'docx', 'xls', 'xlsx'].includes(extensao);
+  const srcViewer = ehOffice
+    ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(doc.url)}`
+    : doc.url;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal modal-viewer" role="dialog" aria-modal="true" aria-labelledby="modal-viewer-titulo">
+      <div class="modal-header">
+        <div class="viewer-titulo">
+          <h3 id="modal-viewer-titulo">${escaparHtml(doc.titulo)}</h3>
+          <span>${escaparHtml(doc.fonte)}</span>
+        </div>
+        <div class="viewer-acoes">
+          <a class="btn-modal btn-modal-cancel viewer-link" href="${escaparHtml(doc.url)}" target="_blank" rel="noopener">Abrir em nova guia</a>
+          <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
+        </div>
+      </div>
+      <div class="viewer-corpo">
+        <p class="viewer-loading">Carregando documento…</p>
+        <iframe class="viewer-frame" title="${escaparHtml(doc.titulo)}" src="${escaparHtml(srcViewer)}"></iframe>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const frame = overlay.querySelector('.viewer-frame');
+  const loading = overlay.querySelector('.viewer-loading');
+  frame.addEventListener('load', () => loading.remove());
+
+  function fechar() {
+    document.removeEventListener('keydown', aoPressionarTecla);
+    document.body.classList.remove('modal-aberto');
+    overlay.remove();
+  }
+
+  function aoPressionarTecla(e) {
+    if (e.key === 'Escape') fechar();
+  }
+
+  document.body.classList.add('modal-aberto');
+  document.addEventListener('keydown', aoPressionarTecla);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar(); });
+  overlay.querySelector('.modal-close').addEventListener('click', fechar);
 }
 
 /* --------------------------------------------------------------------------

@@ -808,7 +808,7 @@ body{
 .btn-modal-send   { background: #2563EB; color: #fff; }
 .btn-modal-send:disabled { opacity: 0.6; cursor: wait; }
 
-/* Pop-up de envio de documento — cole este bloco no final do analises.css */
+/* Pop-up de envio de documento */
 
 .modal-overlay {
   position: fixed;
@@ -996,4 +996,78 @@ body{
 
 .contato-btn-outro {
   border-style: dashed;
+}
+
+/* Pop-up de visualização de documento */
+.modal-viewer {
+  max-width: 980px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-viewer .modal-header {
+  flex: none;
+  gap: 12px;
+}
+
+.viewer-titulo {
+  min-width: 0;
+}
+
+.viewer-titulo h3 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.viewer-titulo span {
+  font-size: 13px;
+  color: #64748B;
+}
+
+.viewer-acoes {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.viewer-link {
+  text-decoration: none;
+  font-size: 13px;
+  padding: 8px 12px;
+}
+
+.viewer-corpo {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: #F1F5F9;
+}
+
+.viewer-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #fff;
+}
+
+.viewer-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  color: #64748B;
+  font-size: 14px;
+}
+
+body.modal-aberto { overflow: hidden; }
+
+@media (max-width: 600px) {
+  .modal-viewer { height: 94vh; }
+  .viewer-link { display: none; }
 }
