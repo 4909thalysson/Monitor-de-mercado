@@ -319,6 +319,7 @@ const api = {
 
           return {
             logo: logoParaFonte(fonte),
+            cultura: COLUMN_META[chave].label.toLowerCase(),
             titulo: titulo || arquivo.name,
             fonte: fonte || '—',
             data: formatarDataArquivo(arquivo.created_at),
@@ -561,7 +562,13 @@ function abrirModalVisualizador(doc) {
 // Monta o link wa.me com a mensagem pronta. Número vazio = a pessoa escolhe
 // o contato dentro do WhatsApp.
 function montarLinkWhatsApp(doc, numero) {
-  const linhas = [`*${doc.titulo}*`];
+  const linhas = [
+    'Olá, tudo bem?',
+    '',
+    `Você está recebendo um informativo com as principais analises de ${doc.cultura}. Boa Leitura !`,
+    '',
+    `*${doc.titulo}*`
+  ];
   if (doc.fonte && doc.fonte !== '—') linhas.push(`Fonte: ${doc.fonte}`);
   linhas.push('', doc.url);
 
