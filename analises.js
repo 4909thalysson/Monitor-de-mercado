@@ -35,8 +35,8 @@ const WHATSAPP_CONTATOS = [
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const HG_WEATHER_KEY = 'bf20c501';
-const HG_FINANCE_KEY = 'bf20c501';
+const HG_WEATHER_KEY = 'ad3c14fd';
+const HG_FINANCE_KEY = 'ad3c14fd';
 const CITY_NAME = 'São Luiz Gonzaga,RS';
  
 // Troque pela URL da página de Análises assim que ela estiver publicada.
