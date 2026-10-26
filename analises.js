@@ -260,15 +260,17 @@ function limparCampo(valor) {
 }
 
 /* --------------------------------------------------------------------------
-   Autenticação
-   EXIGIR_LOGIN = false  → todo mundo vê o botão de upload (modo atual, sem
-                           policies no Supabase ainda).
-   EXIGIR_LOGIN = true   → só quem estiver logado vê o botão. Mude para true
-                           depois de criar o admin e as policies no Supabase;
-                           a proteção real está nas policies, isto é só interface.
+   Modo da página
+   A mesma página serve a URL pública e a interna. O que muda é o atributo
+   data-modo no <body>:
+     (sem atributo)      → página pública, só leitura (nunca mostra upload).
+     data-modo="admin"   → página interna: entra sozinha (sem tela de login)
+                           e mostra o botão de adicionar documento.
+   A proteção real está nas policies do Supabase (só usuário autenticado
+   pode gravar). Esconder o botão é só interface.
    -------------------------------------------------------------------------- */
 
-const EXIGIR_LOGIN = false;
+const MODO_ADMIN = document.body.dataset.modo === 'admin';
 
 async function obterSessao() {
   const { data } = await supabaseClient.auth.getSession();
@@ -567,7 +569,6 @@ function montarLinkWhatsApp(doc, numero) {
     '',
     `Você está recebendo um informativo com as principais analises de ${doc.cultura}. Boa Leitura !`,
     '',
-    'para mais informações acesse o link abaixo:https://monitormercado-six.vercel.app/',
     `*${doc.titulo}*`
   ];
   if (doc.fonte && doc.fonte !== '—') linhas.push(`Fonte: ${doc.fonte}`);
@@ -802,8 +803,8 @@ function criarColuna(chave, docs, logado) {
     docs.forEach((doc) => body.appendChild(criarCardDocumento(doc)));
   }
 
-  // Com EXIGIR_LOGIN ligado, só quem está logado vê o botão de envio.
-  if (!EXIGIR_LOGIN || logado) {
+  // Só na página interna (data-modo="admin") com a conta já autenticada.
+  if (MODO_ADMIN && logado) {
     const btnAdd = document.createElement('button');
     btnAdd.className = 'btn-add-doc';
     btnAdd.innerHTML = `<span class="btn-add-icon">${ICONS.plus}</span> Adicionar documento`;
@@ -815,6 +816,35 @@ function criarColuna(chave, docs, logado) {
 }
 
 /* --------------------------------------------------------------------------
+   Acesso da página interna (sem tela de login)
+   Na página interna (data-modo="admin") a página entra sozinha com a conta
+   definida em admin-config.js. Esse arquivo só pode existir no servidor
+   interno: quem não alcança a página interna não tem como obter a senha.
+   -------------------------------------------------------------------------- */
+
+async function entrarComoAdmin() {
+  const sessaoAtual = await obterSessao();
+  if (sessaoAtual) return sessaoAtual;
+
+  const cfg = window.ADMIN_LOGIN;
+  if (!cfg || !cfg.email || !cfg.senha) {
+    console.error('admin-config.js ausente ou sem e-mail/senha.');
+    return null;
+  }
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: cfg.email,
+    password: cfg.senha
+  });
+
+  if (error) {
+    console.error('Não foi possível entrar com a conta da página interna:', error);
+    return null;
+  }
+  return data.session;
+}
+
+/* --------------------------------------------------------------------------
    Renderização da página
    -------------------------------------------------------------------------- */
 
@@ -822,17 +852,15 @@ async function renderPagina() {
   const container = document.getElementById('columns');
   container.innerHTML = '<p class="loading-msg">Carregando documentos…</p>';
 
-  const [dados, sessao] = await Promise.all([api.getAnalises(), obterSessao()]);
+  const [dados, sessao] = await Promise.all([
+    api.getAnalises(),
+    MODO_ADMIN ? entrarComoAdmin() : obterSessao()
+  ]);
   container.innerHTML = '';
 
   Object.keys(COLUMN_META).forEach((chave) => {
     container.appendChild(criarColuna(chave, dados[chave] || [], !!sessao));
   });
 }
-
-// Se o login/logout acontecer em outra aba, a página atualiza sozinha.
-supabaseClient.auth.onAuthStateChange((evento) => {
-  if (evento === 'SIGNED_IN' || evento === 'SIGNED_OUT') renderPagina();
-});
 
 renderPagina();
