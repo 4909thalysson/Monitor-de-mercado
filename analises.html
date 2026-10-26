@@ -3,20 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Monitor de Mercado — Widget Pipefy</title>
+<title>Análises de Mercado</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="index.css">
+<link rel="stylesheet" href="analises.css">
 </head>
 <body>
-  <!-- ============ MONITOR DE MERCADO (dólar / euro / clima) ============ -->
+
+    <!-- ============ MONITOR DE MERCADO (dólar / euro / clima) ============ -->
   <section class="section-monitor">
     <div class="widget" id="widget">
       <div class="widget-grid">
         <h1 class="title">Monitor de Mercado</h1>
-
-        <div class="widget-divider" aria-hidden="true"></div>
 
         <div class="clock">
           <p class="clock-time" id="clock-time">--:--</p>
@@ -63,44 +62,30 @@
     </div>
   </section>
 
-  <!-- ============ COTAÇÕES AGRÍCOLAS (widgets oficiais Cepea) ============ -->
-  <section class="section-cotacoes">
-    <div class="cotacoes-widget">
-      <h2 class="cotacoes-title">Cotações Agrícolas</h2>
-      <p class="cotacoes-subtitle">Principais indicadores de preços do mercado agrícola.</p>
+  <div class="page">
 
-      <div class="cepea-grid">
-
-        <!-- Soja (PR + Paranaguá) -->
-        <div class="cepea-item">
-          <!-- Widgets Produtos Cepea - www.cepea.esalq.com.br/br/widget.aspx -->
-          <script type="text/javascript" src="https://www.cepea.org.br/br/widgetproduto.js.php?fonte=arial&tamanho=14&largura=290px&corfundo=ffffff&cortexto=404145&corlinha=ffffff&id_indicador%5B%5D=77&id_indicador%5B%5D=2"></script>
-        </div>
-
-        <!-- Trigo (PR + RS) -->
-        <div class="cepea-item">
-          <!-- Widgets Produtos Cepea - www.cepea.esalq.com.br/br/widget.aspx -->
-          <script type="text/javascript" src="https://www.cepea.org.br/br/widgetproduto.js.php?fonte=arial&tamanho=14&largura=290px&corfundo=ffffff&cortexto=404145&corlinha=ffffff&id_indicador%5B%5D=178&id_indicador%5B%5D=179"></script>
-        </div>
-
-        <!-- Milho + Boi Gordo -->
-        <div class="cepea-item">
-          <!-- Widgets Produtos Cepea - www.cepea.esalq.com.br/br/widget.aspx -->
-          <script type="text/javascript" src="https://www.cepea.org.br/br/widgetproduto.js.php?fonte=arial&tamanho=14&largura=290px&corfundo=ffffff&cortexto=404145&corlinha=ffffff&id_indicador%5B%5D=12&id_indicador%5B%5D=92"></script>
-        </div>
-
+    <header class="page-header">
+      <div class="header-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M6 2h9l5 5v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M15 2v5h5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
       </div>
-
-        <div class="cta-analises">
-          <p class="cta-analises-title">O mercado agrícola, em uma única visão.</p>
-          <p class="cta-analises-text">Acompanhe cotações, safras, históricos e indicadores em um ambiente atualizado e acessível sempre que precisar.</p>
-        </div>
-        <button class="btn btn-primary" id="btn-analises">Acessar Análises</button>
+      <div>
+        <h1 class="page-title">Análises de Mercado</h1>
+        <p class="page-subtitle">Acompanhe e compartilhe documentos e análises das principais plataformas do mercado, organizados por cultura.</p>
       </div>
+    </header>
 
-    </div>
-  </section>
+    <!-- As colunas (Soja / Trigo / Milho) e os cards de documento são
+         montados pelo analises.js, que lista os arquivos direto do bucket
+         "analises" no Supabase Storage. -->
+    <div class="columns" id="columns"></div>
 
-  <script src="index.js"></script>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="analises.js"></script>
 </body>
 </html>

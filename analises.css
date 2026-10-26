@@ -1,5 +1,8 @@
 :root{
   --blue: #2C55F0;
+  --blue-dark: #1E3FC2;
+  --blue-light: #5878F5;
+  --white: #FFFFFF;
   --ink: #1F2A44;
   --gray: #6B7280;
   --gray-light: #E5E9F0;
@@ -50,8 +53,8 @@ body{
   color: var(--white);
 }
 
-/* Grid de 2 linhas x 3 colunas: título/divisor/relógio na linha de cima e
-   cotações/divisor/temperatura na de baixo. Colocar ".quotes" e ".weather"
+/* Grid de 2 linhas x 2 colunas: título/relógio na linha de cima e
+   cotações/clima na de baixo. Colocar ".quotes" e ".weather"
    na mesma linha do grid é o que garante que os dois blocos fiquem
    alinhados um do lado do outro, na mesma altura. */
 .widget-grid{
@@ -63,10 +66,10 @@ body{
      um pouco maior (número com mais dígitos). Com minmax(0, 1fr), a
      coluna pode encolher normalmente e os cards de cotação quebram linha
      (flex-wrap) em vez de estourar a largura. */
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
-    "title divider clock"
-    "quotes divider weather";
+    "title clock"
+    "quotes weather";
   column-gap: 24px;
   row-gap: 16px;
   align-items: start;
@@ -276,6 +279,155 @@ body{
   max-width: 150px;
   object-fit: contain;
   display: block;
+}
+
+/* ============ MONITOR DE MERCADO ============ */
+
+.section-monitor{
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(28px, 5vw, 64px) 24px;
+  background: linear-gradient(135deg, #0c1c3b 0%, #173d7c 58%, #1e3fc2 100%);
+}
+
+.section-monitor::before,
+.section-monitor::after{
+  content: "";
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.section-monitor::before{
+  width: 440px;
+  height: 440px;
+  top: -260px;
+  right: -80px;
+  background: rgba(88, 120, 245, .28);
+  filter: blur(4px);
+}
+
+.section-monitor::after{
+  width: 360px;
+  height: 360px;
+  bottom: -280px;
+  left: -90px;
+  background: rgba(32, 198, 166, .14);
+  filter: blur(10px);
+}
+
+.widget{
+  position: relative;
+  max-width: 1120px;
+  padding: clamp(22px, 4vw, 42px);
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 28px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .055));
+  box-shadow: 0 24px 70px rgba(4, 16, 46, .3);
+  backdrop-filter: blur(14px);
+}
+
+.widget-grid{
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: clamp(18px, 3vw, 36px);
+  row-gap: 24px;
+  align-items: center;
+}
+
+.title{
+  font-size: clamp(28px, 3.6vw, 40px);
+  letter-spacing: .8px;
+}
+
+.clock{
+  padding: 12px 18px;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 16px;
+  background: rgba(8, 23, 57, .22);
+}
+
+.clock-time{
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+
+.weather{
+  width: 100%;
+  max-width: 380px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, .72);
+  box-shadow: 0 14px 34px rgba(4, 16, 46, .16);
+  overflow: hidden;
+}
+
+.weather-label{
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.weather-main{ margin-bottom: 16px; }
+.weather-value{ font-size: 42px; }
+
+.forecast-item{
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(110deg, var(--blue), var(--blue-dark));
+}
+
+.quotes{ gap: 12px; }
+
+.quote-card{
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1 1 150px;
+  padding: 20px 16px;
+  border: 1px solid rgba(255, 255, 255, .7);
+  background: linear-gradient(150deg, #fff, #f4f7ff);
+  box-shadow: 0 12px 28px rgba(4, 16, 46, .14);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.quote-card:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 18px 34px rgba(4, 16, 46, .2);
+}
+
+.quote-label{ font-size: 14px; }
+
+.quote-date{
+  color: #73809a;
+  margin: 4px 0 8px;
+}
+
+.quote-value{ font-size: clamp(24px, 3.4vw, 34px); }
+
+@media (max-width: 760px){
+  .section-monitor{ padding: 24px 16px; }
+  .widget{ border-radius: 22px; }
+  .widget-grid{
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "title" "clock" "quotes" "weather";
+    row-gap: 18px;
+  }
+  .clock{ justify-self: start; text-align: left; }
+  .weather{ justify-self: stretch; max-width: none; }
+}
+
+@media (max-width: 460px){
+  .section-monitor{ padding: 16px 12px; }
+  .widget{ padding: 20px 16px; border-radius: 18px; }
+  .title{ font-size: 28px; }
+  .quotes{ display: grid; grid-template-columns: 1fr; }
+  .quote-card{ padding: 16px; }
+  .weather{ padding: 16px; }
+  .weather-main{ align-items: flex-start; gap: 10px; }
+  .weather-value{ font-size: 36px; }
+  .forecast-row{ justify-content: space-between; gap: 8px; }
 }
 
 /* ============ CABEÇALHO ============ */
