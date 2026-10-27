@@ -671,13 +671,21 @@ function abrirModalVisualizador(doc) {
 // Monta o link wa.me com a mensagem pronta. Número vazio = a pessoa escolhe
 // o contato dentro do WhatsApp.
 function montarLinkWhatsApp(doc, numero) {
-  const linhas = [
-    'Olá, tudo bem?',
-    '',
-    `Você está recebendo um informativo com as principais analises de ${doc.cultura}. Boa Leitura !`,
-    '',
-    `*${doc.titulo}*`
-  ];
+const linhas = [
+  'Olá, tudo bem?',
+  '',
+  `Você está recebendo um informativo com as principais análises de mercado sobre *${doc.cultura}*.`,
+  '',
+  '📊 *Conheça o Monitor de Mercado!*',
+  '',
+  'Estamos desenvolvendo um protótipo para facilitar o acesso, a leitura e a consulta de documentos de análises de mercado, reunindo as informações em um ambiente mais organizado e acessível.',
+  '',
+  '🌐 Acesse o protótipo: https://monitormercado-six.vercel.app/',
+  '',
+  `📄 *${doc.titulo}*`,
+  '',
+  'Boa leitura!'
+];
   if (doc.fonte && doc.fonte !== '—') linhas.push(`Fonte: ${doc.fonte}`);
   linhas.push('', doc.url);
 
