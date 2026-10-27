@@ -13,9 +13,9 @@ ICONS.archive = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 
 // Pastas do Zoho WorkDrive onde as análises antigas são guardadas (manual).
 const PASTAS_WORKDRIVE = {
-  soja:  'https://workdrive.zoho.com/folder/vnbbn5625d7e8a2fc4d459c2d05fefde8c999',
-  trigo: 'https://workdrive.zoho.com/folder/vnbbn0ccbf2bb0f5b4818b4d0169c544446d3',
-  milho: 'https://workdrive.zoho.com/folder/vnbbn9f603f277bd2453e8eda2957513f0bb5'
+  soja:  'https://workdrive.zohoexternal.com/external/562adb2490090f7c5aa2c473b7bea76f062de0bb19131da4af1b4e3c6dfbf2b8',
+  trigo: 'https://workdrive.zohoexternal.com/external/8ccf5a681bfe3cf26ae6484fe00c01ef4069e9eb3994f9d85ddb64e7dd153948',
+  milho: 'https://workdrive.zohoexternal.com/external/4b37c02f094c9476b3f9e692aaea35785b7321813e825a35d68a42c2fd6f7b3f'
 };
 
 // Quantas análises ficam no painel por cultura; as demais são marcadas "Arquivar".
