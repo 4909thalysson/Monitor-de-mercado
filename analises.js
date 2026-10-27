@@ -9,6 +9,18 @@ const ICONS = {
   milho: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="3" width="8" height="17" rx="4" stroke-linejoin="round"/><path d="M9 7h6M9 10h6M9 13h6M9 16h6" stroke-linecap="round"/></svg>'
 };
 
+ICONS.archive = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M12 11.5v5M9.8 14.5l2.2 2.2 2.2-2.2"/></svg>';
+
+// Pastas do Zoho WorkDrive onde as análises antigas são guardadas (manual).
+const PASTAS_WORKDRIVE = {
+  soja:  'https://workdrive.zoho.com/folder/vnbbn5625d7e8a2fc4d459c2d05fefde8c999',
+  trigo: 'https://workdrive.zoho.com/folder/vnbbn0ccbf2bb0f5b4818b4d0169c544446d3',
+  milho: 'https://workdrive.zoho.com/folder/vnbbn9f603f277bd2453e8eda2957513f0bb5'
+};
+
+// Quantas análises ficam no painel por cultura; as demais são marcadas "Arquivar".
+const MANTER_NO_PAINEL = 2;
+
 // "imagem" = PNG da pasta ASSESTS (principal). "icon" = SVG genérico (fallback).
 const COLUMN_META = {
   soja:  { label: 'Soja',  imagem: '/ASSESTS/icon-soja.png',  icon: ICONS.soja },
@@ -322,6 +334,9 @@ const api = {
           return {
             logo: logoParaFonte(fonte),
             cultura: COLUMN_META[chave].label.toLowerCase(),
+            chave,
+            caminho,
+            urlDownload: supabaseClient.storage.from(BUCKET).getPublicUrl(caminho, { download: true }).data.publicUrl,
             titulo: titulo || arquivo.name,
             fonte: fonte || '—',
             data: formatarDataArquivo(arquivo.created_at),
@@ -354,9 +369,10 @@ function criarCardDocumento(doc) {
         <button class="doc-action doc-action-whatsapp" title="Enviar por WhatsApp">${ICONS.whatsapp}</button>
         <button class="doc-action doc-action-email" title="Enviar por e-mail">${ICONS.email}</button>
         <button class="doc-action doc-action-view" title="Visualizar">${ICONS.view}</button>
+        ${MODO_ADMIN ? `<button class="doc-action doc-action-archive" title="Arquivar no WorkDrive">${ICONS.archive}</button>` : ''}
       </div>
     </div>
-    <p class="doc-meta">${ICONS.calendar}<span>${escaparHtml(doc.data)} • ${escaparHtml(doc.tamanho)}</span></p>
+    <p class="doc-meta">${ICONS.calendar}<span>${escaparHtml(doc.data)} • ${escaparHtml(doc.tamanho)}</span>${MODO_ADMIN && doc.antigo ? '<span class="doc-tag-antigo">Arquivar</span>' : ''}</p>
     ${doc.descricao ? `<p class="doc-description">${escaparHtml(doc.descricao)}</p>` : ''}
   `;
 
@@ -372,6 +388,11 @@ function criarCardDocumento(doc) {
   card.querySelector('.doc-action-email').addEventListener('click', () => {
     abrirModalEmail(doc);
   });
+  if (MODO_ADMIN) {
+    card.querySelector('.doc-action-archive').addEventListener('click', () => {
+      abrirModalArquivar(doc);
+    });
+  }
 
   return card;
 }
@@ -379,6 +400,92 @@ function criarCardDocumento(doc) {
 /* --------------------------------------------------------------------------
    Pop-up de envio de documento
    -------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------
+   Arquivar no WorkDrive (manual, só na página interna)
+   1) baixa o PDF, 2) abre a pasta da cultura no WorkDrive para enviar,
+   3) depois de conferir, remove o arquivo do painel.
+   -------------------------------------------------------------------------- */
+
+function abrirModalArquivar(doc) {
+  const pasta = PASTAS_WORKDRIVE[doc.chave];
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-arquivar-titulo">
+      <div class="modal-header">
+        <h3 id="modal-arquivar-titulo">Arquivar no WorkDrive</h3>
+        <button type="button" class="modal-close" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="modal-form">
+        <p class="modal-doc-resumo">
+          <strong>${escaparHtml(doc.titulo)}</strong><br>
+          <span>${escaparHtml(doc.fonte)} · ${escaparHtml(doc.cultura)}</span>
+        </p>
+
+        <ol class="arquivar-passos">
+          <li>
+            <span>Baixe o PDF para o seu computador.</span>
+            <a class="btn-modal btn-modal-cancel arquivar-link" href="${escaparHtml(doc.urlDownload)}">Baixar PDF</a>
+          </li>
+          <li>
+            <span>Abra a pasta de ${escaparHtml(doc.cultura)} e envie o arquivo baixado.</span>
+            <a class="btn-modal btn-modal-cancel arquivar-link" href="${escaparHtml(pasta)}" target="_blank" rel="noopener">Abrir pasta</a>
+          </li>
+          <li>
+            <span>Com o arquivo já na pasta, remova-o do painel.</span>
+            <button type="button" class="btn-modal btn-modal-perigo arquivar-remover">Remover do painel</button>
+          </li>
+        </ol>
+
+        <p class="modal-error" hidden></p>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const erroEl = overlay.querySelector('.modal-error');
+  const btnRemover = overlay.querySelector('.arquivar-remover');
+
+  function fechar() {
+    document.removeEventListener('keydown', aoPressionarTecla);
+    overlay.remove();
+  }
+
+  function aoPressionarTecla(e) {
+    if (e.key === 'Escape') fechar();
+  }
+
+  document.addEventListener('keydown', aoPressionarTecla);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) fechar(); });
+  overlay.querySelector('.modal-close').addEventListener('click', fechar);
+
+  btnRemover.addEventListener('click', async () => {
+    if (!confirm('Confirma que o arquivo já está salvo no WorkDrive? Ele será removido do painel.')) return;
+
+    erroEl.hidden = true;
+    btnRemover.disabled = true;
+    btnRemover.textContent = 'Removendo…';
+
+    const { data, error } = await supabaseClient.storage.from(BUCKET).remove([doc.caminho]);
+
+    // Sem permissão (policy de delete), o Supabase não dá erro: devolve lista vazia.
+    if (error || !data || data.length === 0) {
+      console.error(error || 'Nenhum arquivo removido (verifique a policy de delete).');
+      erroEl.textContent = 'Não foi possível remover. Confira se a policy de exclusão foi criada no Supabase.';
+      erroEl.hidden = false;
+      btnRemover.disabled = false;
+      btnRemover.textContent = 'Remover do painel';
+      return;
+    }
+
+    fechar();
+    await renderPagina();
+  });
+}
 
 function abrirModalUpload(chave) {
   const meta = COLUMN_META[chave];
@@ -800,7 +907,10 @@ function criarColuna(chave, docs, logado) {
     vazio.textContent = 'Nenhum documento por aqui ainda.';
     body.appendChild(vazio);
   } else {
-    docs.forEach((doc) => body.appendChild(criarCardDocumento(doc)));
+    docs.forEach((doc, i) => {
+      doc.antigo = i >= MANTER_NO_PAINEL; // lista vem do mais novo para o mais velho
+      body.appendChild(criarCardDocumento(doc));
+    });
   }
 
   // Só na página interna (data-modo="admin") com a conta já autenticada.
@@ -810,6 +920,16 @@ function criarColuna(chave, docs, logado) {
     btnAdd.innerHTML = `<span class="btn-add-icon">${ICONS.plus}</span> Adicionar documento`;
     btnAdd.addEventListener('click', () => abrirModalUpload(chave));
     body.appendChild(btnAdd);
+  }
+
+  if (MODO_ADMIN && PASTAS_WORKDRIVE[chave]) {
+    const linkPasta = document.createElement('a');
+    linkPasta.className = 'btn-pasta-drive';
+    linkPasta.href = PASTAS_WORKDRIVE[chave];
+    linkPasta.target = '_blank';
+    linkPasta.rel = 'noopener';
+    linkPasta.textContent = `Abrir pasta de ${meta.label} no WorkDrive`;
+    body.appendChild(linkPasta);
   }
 
   return coluna;
